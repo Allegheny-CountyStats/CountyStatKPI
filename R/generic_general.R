@@ -293,34 +293,34 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) 
   if (prior_val == "month") {
 
     # get the prior month and year in readable format
-    pmy <- format(rpt_date - months(1), "%B %Y")
+    pmy <- format(rpt_date - lubridate::months(1), "%B %Y")
 
     if (kpi_cmp$mom_inc_dec == "no change") {
 
-      header_text <- str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
-                           "**", kpi_cmp$mom_up_down, " No change compared to ", pmy, "**")
+      header_text <- stringr::str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+                                    "**", kpi_cmp$mom_up_down, " No change compared to ", pmy, "**")
 
     } else {
 
-      header_text <- str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
-                           "**", kpi_cmp$mom_up_down, " ", kpi_cmp$mom_abs_chg, "% ", kpi_cmp$mom_inc_dec, " compared to ", pmy, "**")
+      header_text <- stringr::str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+                                    "**", kpi_cmp$mom_up_down, " ", kpi_cmp$mom_abs_chg, "% ", kpi_cmp$mom_inc_dec, " compared to ", pmy, "**")
 
     }
 
   } else if (prior_val == "year") {
 
     # get the same month of the previous year in readable month year format
-    pmy <- format(rpt_date - years(1), "%B %Y")
+    pmy <- format(rpt_date - lubridate::years(1), "%B %Y")
 
     if (kpi_cmp$yoy_inc_dec == "no change") {
 
-      header_text <- str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
-                           "**", kpi_cmp$yoy_up_down, " No change compared to ", pmy, "**")
+      header_text <- stringr::str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+                                    "**", kpi_cmp$yoy_up_down, " No change compared to ", pmy, "**")
 
     } else {
 
-      header_text <- str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
-                           "**", kpi_cmp$yoy_up_down, " ", kpi_cmp$yoy_abs_chg, "% ", kpi_cmp$yoy_inc_dec, " compared to ", pmy, "**")
+      header_text <- stringr::str_c("## ", my, ": ", prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+                                    "**", kpi_cmp$yoy_up_down, " ", kpi_cmp$yoy_abs_chg, "% ", kpi_cmp$yoy_inc_dec, " compared to ", pmy, "**")
 
     }
 
@@ -328,13 +328,13 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) 
 
     if (kpi_cmp$ytd_inc_dec == "no change") {
 
-      header_text <- str_c("## YTD: ", prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
-                           "**", kpi_cmp$ytd_up_down, " ",  "No change compared to same period in previous year.**")
+      header_text <- stringr::str_c("## YTD: ", prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
+                                    "**", kpi_cmp$ytd_up_down, " ",  "No change compared to same period in previous year.**")
 
     } else {
 
-      header_text <- str_c("## YTD: ", prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
-                           "**", kpi_cmp$ytd_up_down, " ", kpi_cmp$ytd_abs_chg, "% ", kpi_cmp$ytd_inc_dec, " compared the same period in the previous year.**")
+      header_text <- stringr::str_c("## YTD: ", prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
+                                    "**", kpi_cmp$ytd_up_down, " ", kpi_cmp$ytd_abs_chg, "% ", kpi_cmp$ytd_inc_dec, " compared the same period in the previous year.**")
 
     }
 
