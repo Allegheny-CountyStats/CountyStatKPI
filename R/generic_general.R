@@ -348,3 +348,23 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) 
 
 }
 
+#' A function creating text for year-over-year change.
+#'
+#' @param kpi_cmp A kpi_compare object.
+#' @param rpt_date The first day of the reporting month.
+#'
+#' @return A string with R markdown formatting.
+#' @export
+#'
+#' #' @examples
+#' \dontrun{metric_yoy_text <- kpi_yoy_text(metric_cmp, rpt_date)}
+kpi_yoy_text <- function(kpi_cmp, rpt_date) {
+  month <- month(rpt_date, label = TRUE, abbr = FALSE)
+  if (kpi_cmp$yoy_inc_dec == "no change") {
+    yoy_text <- str_c("There has been **no change compared to last ", month, "**")
+  } else {
+    yoy_text <- str_c("This month represents **a ", kpi_cmp$yoy_abs_chg, "% ",
+                      kpi_cmp$yoy_inc_dec, " compared to last ", month, "**")
+  }
+  return(yoy_text)
+}
