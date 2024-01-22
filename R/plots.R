@@ -41,3 +41,20 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
 kpi_trend_theme <- ggplot2::theme_minimal() +
   ggplot2::theme(legend.position = "bottom",
                  axis.title.x = ggplot2::element_blank())
+
+#' A function that creates a uniform color scheme for KPI reports.
+#'
+#' @return A palette.
+#' @export
+#'
+#' @examples
+#' \dontrun{palette = kpiPal(rpt_date)}
+kpiPal <- function(end_date) {
+  this_year <- as.numeric(format(end_date, "%Y"))
+  pal_cols <- c('#1b9e77', '#d95f02', '#e6ab02', '#66a61e', '#7570b3', '#e7298a')
+  years <- 2017:this_year
+  color_pal <- data.frame(years)
+  color_pal$colors <- rep_len(pal_cols, length.out=length(years))
+  color_pal %>% deframe()
+}
+
