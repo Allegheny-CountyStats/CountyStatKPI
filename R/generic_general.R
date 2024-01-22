@@ -329,7 +329,7 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) 
     if (kpi_cmp$ytd_inc_dec == "no change") {
 
       header_text <- stringr::str_c("## YTD: ", prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
-                                    "**", kpi_cmp$ytd_up_down, " ",  "No change compared to same period in previous year.**")
+                                    "**", kpi_cmp$ytd_up_down, " ",  "No change compared to the same period in the previous year.**")
 
     } else {
 
