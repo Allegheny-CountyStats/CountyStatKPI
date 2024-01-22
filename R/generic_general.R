@@ -105,7 +105,7 @@ kpi_compare <- function(data, date_col, rpt_date, method = "tally", val_col, mod
         dplyr::pull(n)
 
       pm_cnt <- data %>%
-        dplyr::filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - lubridate::months(1)) %>%
+        dplyr::filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - months(1)) %>%
         dplyr::tally() %>%
         dplyr::pull(n)
 
@@ -125,7 +125,7 @@ kpi_compare <- function(data, date_col, rpt_date, method = "tally", val_col, mod
         dplyr::pull(n)
 
       pm_cnt <- data %>%
-        dplyr::filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - lubridate::months(1)) %>%
+        dplyr::filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - months(1)) %>%
         dplyr::summarize(n = sum({{val_col}}, na.rm = T)) %>%
         dplyr::pull(n)
 
@@ -145,7 +145,7 @@ kpi_compare <- function(data, date_col, rpt_date, method = "tally", val_col, mod
         dplyr::pull(n)
 
       pm_cnt <- data %>%
-        filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - lubridate::months(1)) %>%
+        filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - months(1)) %>%
         summarize(n = round(mean({{val_col}}, na.rm = T), 1)) %>%
         pull(n)
 
@@ -165,7 +165,7 @@ kpi_compare <- function(data, date_col, rpt_date, method = "tally", val_col, mod
         dplyr::pull(n)
 
       pm_cnt <- data %>%
-        filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - lubridate::months(1)) %>%
+        filter(lubridate::floor_date({{date_col}}, unit = "months") == rpt_date - months(1)) %>%
         dplyr::summarize(n = dplyr::n_distinct({{val_col}})) %>%
         dplyr::pull(n)
 
@@ -293,7 +293,7 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) 
   if (prior_val == "month") {
 
     # get the prior month and year in readable format
-    pmy <- format(rpt_date - lubridate::months(1), "%B %Y")
+    pmy <- format(rpt_date - months(1), "%B %Y")
 
     if (kpi_cmp$mom_inc_dec == "no change") {
 
