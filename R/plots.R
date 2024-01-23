@@ -11,8 +11,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{metric_data %>% kpi_trend_plot(totals) + labs(title = 'Plot title', ylab = 'Count'))}
-#' \dontrun{metric_data %>% kpi_trend_plot(totals, month_lag = 3, date_col = date) + labs(title = 'Plot title', ylab = 'Count') + theme_minimal())}
+#' metric_data %>% kpi_trend_plot(totals) + labs(title = 'Plot title', ylab = 'Count'))
+#' metric_data %>% kpi_trend_plot(totals, month_lag = 3, date_col = date) + labs(title = 'Plot title', ylab = 'Count') + theme_minimal())
 kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, date_col = rpting_date, palette = pal) {
   plot <- data %>%
     filter(year({{date_col}}) >= year(rpt_month - months(month_lag)) - 4,
@@ -37,7 +37,7 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
 #' @export
 #'
 #' @examples
-#' \dontrun{plot + labs(title = "Plot title", y = "Count") + kpi_trend_theme())}
+#' plot + labs(title = "Plot title", y = "Count") + kpi_trend_theme())
 kpi_trend_theme <- ggplot2::theme_minimal() +
   ggplot2::theme(legend.position = "bottom",
                  axis.title.x = ggplot2::element_blank())
@@ -48,7 +48,7 @@ kpi_trend_theme <- ggplot2::theme_minimal() +
 #' @export
 #'
 #' @examples
-#' \dontrun{palette = kpiPal(rpt_date)}
+#' palette = kpiPal(rpt_date)
 kpiPal <- function(end_date) {
   this_year <- as.numeric(format(end_date, "%Y"))
   pal_cols <- c('#1b9e77', '#d95f02', '#e6ab02', '#66a61e', '#7570b3', '#e7298a')

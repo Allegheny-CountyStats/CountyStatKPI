@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{metric_pcts <- kpi_pcts(metric_cnt, metric_pm_cnt, metric_py_cnt)}
+#' metric_pcts <- kpi_pcts(metric_cnt, metric_pm_cnt, metric_py_cnt)
 
 kpi_pcts <- function(rm_cnt, pm_cnt, py_cnt, mode = "my") {
 
@@ -87,8 +87,8 @@ kpi_pcts <- function(rm_cnt, pm_cnt, py_cnt, mode = "my") {
 #' @export
 #'
 #' @examples
-#' \dontrun{metric_cmp <- kpi_compare(metric_data, date, rpt_date, mode = "ytd")}
-#' \dontrun{metric_cmp <- kpi_compare(metric_data, date, rpt_date, method = "avg", val_col = totals)}
+#' metric_cmp <- kpi_compare(metric_data, date, rpt_date, mode = "ytd")
+#' metric_cmp <- kpi_compare(metric_data, date, rpt_date, method = "avg", val_col = totals)
 
 kpi_compare <- function(data, date_col, rpt_date, method = "tally", val_col, mode = "my") {
 
@@ -281,9 +281,8 @@ kpi_compare <- function(data, date_col, rpt_date, method = "tally", val_col, mod
 #'
 #' @return A string with R markdown formatting.
 #' @export
-#'
-#' #' @examples
-#' \dontrun{metric_header_txt <- kpi_header_text(metric_cmp, rpt_date, prior_val = "year", metric_txt = "calls to IT help desk")}
+#' @examples
+#' metric_header_txt <- kpi_header_text(metric_cmp, rpt_date, prior_val = "year", metric_txt = "calls to IT help desk")
 
 kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) {
 
@@ -355,9 +354,8 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt) 
 #'
 #' @return A string with R markdown formatting.
 #' @export
-#'
-#' #' @examples
-#' \dontrun{metric_yoy_text <- kpi_yoy_text(metric_cmp, rpt_date)}
+#' @examples
+#' metric_yoy_text <- kpi_yoy_text(metric_cmp, rpt_date)
 kpi_yoy_text <- function(kpi_cmp, rpt_date) {
   month <- month(rpt_date, label = TRUE, abbr = FALSE)
   if (kpi_cmp$yoy_inc_dec == "no change") {
