@@ -13,5 +13,5 @@ Depends:
   dplyr,
   stringr,
   lubridate,
-  ggplot,
+  ggplot2,
   scales
