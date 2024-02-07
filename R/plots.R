@@ -19,7 +19,7 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
            {{date_col}} <= rpt_month - months(month_lag)) %>%
     mutate(month_abb = month({{date_col}}, label = TRUE),
            year_fct = factor(year({{date_col}})),
-           this_year = ifelse(year({{date_col}}) == year(rpt_month), TRUE, FALSE)) %>%
+           this_year = ifelse(year({{date_col}}) == year(rpt_month - months(month_lag)), TRUE, FALSE)) %>%
     ggplot(aes(month_abb, {{cnt_col}}, group = year_fct, color = year_fct, alpha = this_year)) +
     geom_line(linewidth = 1) +
     geom_point() +
