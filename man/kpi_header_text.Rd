@@ -4,7 +4,13 @@
 \alias{kpi_header_text}
 \title{A function that creates the text at the top of each KPI showing the value and change from the previous specified period}
 \usage{
-kpi_header_text(kpi_cmp, rpt_date, prior_val = "month", metric_txt)
+kpi_header_text(
+  kpi_cmp,
+  rpt_date,
+  prior_val = "month",
+  metric_txt,
+  prefix = NA
+)
 }
 \arguments{
 \item{kpi_cmp}{A kpi_compare list produced by kpi_compare or kpi_pcts.}
@@ -14,6 +20,8 @@ kpi_header_text(kpi_cmp, rpt_date, prior_val = "month", metric_txt)
 \item{prior_val}{The value you want to compare to "month" for previous month, "year" for the same month of the previous year, or "ytd" to compare the current year-to-date with the same period of the previous year.}
 
 \item{metric_txt}{The text you want to appear after the reporting month count.}
+
+\item{prefix}{Something you want to appear before the number (like a dollar sign).}
 }
 \value{
 A string with R markdown formatting.
