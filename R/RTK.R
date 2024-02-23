@@ -86,12 +86,13 @@ rtk_data <- function(data, rpt_sdate, rpt_edate) {
   clean_data <- data %>%
     dplyr::mutate(information_type =  dplyr::coalesce(!!!dplyr::select(., 7:(ncol(data)-2)))) %>%
     dplyr::mutate(date_open = as.Date(create_date),
-                  date_close = dplyr::case_when(as.Date(close_date) <= rpt_edate ~  as.Date(close_date)),
+                  date_close = dplyr::case_when(as.Date(close_date) <= rpt_edate ~ as.Date(close_date)),
                   open_month = lubridate::floor_date(date_open, 'month'),
                   close_month = lubridate::floor_date(date_close, 'month'),
                   status = factor(ifelse(is.na(date_close), "Unresolved", "Resolved"), levels = c("Unresolved", "Resolved")),
-                  date_required_completion = ifelse(is.na(required_completion_date), date_open + lubridate::days(30), required_completion_date),
-                  bizdays_toclose = round(as.numeric(bizdays::bizdays(date_open, date_close, cal = business_calendar)), digits = 1),
+                  date_required_completion = dplyr::case_when(is.na(required_completion_date) ~ as.Date(date_open + lubridate::days(30)),
+                                                              TRUE ~ as.Date(required_completion_date)),
+                  bizdays_toclose = ifelse(is.na(date_close), NA, round(as.numeric(bizdays::bizdays(date_open, date_close, cal = business_calendar)), digits = 1)),
                   late = ifelse(date_close > date_required_completion, 1, 0),
                   bizdays_late = ifelse(late == 1, round(as.numeric(bizdays::bizdays(date_required_completion, date_close, cal = business_calendar)), digits = 1), 0),
                   bizdays_response = round(as.numeric(bizdays::bizdays(date_open, first_response_date, cal = business_calendar)), digits = 1),
@@ -399,10 +400,11 @@ rtk_summary <- function(data, rpt_sdate, rpt_edate) {
                   open_month = lubridate::floor_date(date_open, 'month'),
                   close_month = lubridate::floor_date(date_close, 'month'),
                   status = factor(ifelse(is.na(date_close), "Unresolved", "Resolved"), levels = c("Unresolved", "Resolved")),
-                  date_required_completion = ifelse(is.na(required_completion_date), date_open + lubridate::days(30), required_completion_date),
-                  bizdays_toclose = round(as.numeric(bizdays::bizdays(date_open, date_close, cal = business_calendar)), digits = 1),
+                  date_required_completion = dplyr::case_when(is.na(required_completion_date) ~ date_open + lubridate::days(30),
+                                                              TRUE~ required_completion_date),
+                  bizdays_toclose = ifelse(is.na(date_close), NA, round(as.numeric(bizdays::bizdays(date_open, date_close, cal = business_calendar)), digits = 1)),
                   late = ifelse(date_close > date_required_completion, 1, 0),
-                  bizdays_late = ifelse(late == 1, round(as.numeric(bizdays::bizdays(date_required_completion, date_close, cal = business_calendar)), digits = 1), 0),
+                  bizdays_late = ifelse(late == 1, round(as.numeric(bizdays::bizdays(date_required_completion, date_close, cal = business_calendar, origin = "1970-01-01")), digits = 1), 0),
                   bizdays_response = round(as.numeric(bizdays::bizdays(date_open, first_response_date, cal = business_calendar)), digits = 1),
                   response_late = ifelse(bizdays_response > 5, 1, 0),
                   response_bizdayslate = ifelse(bizdays_response > 5, bizdays_response-5, 0),
@@ -521,3 +523,25 @@ rtk_text <- function(data, rpt_sdate, rpt_edate, dept_text) {
               late_header = late_header, late_text = late_text))
 
 }
+
+#test
+test <- rtk_data(rtk_admin, start_last_month, end_last_month)
+
+clean_data <- rtk_admin %>%
+  dplyr::mutate(information_type =  dplyr::coalesce(!!!dplyr::select(., 7:(ncol(rtk_admin)-2)))) %>%
+  dplyr::mutate(date_open = as.Date(create_date),
+                date_close = dplyr::case_when(as.Date(close_date) <= end_last_month ~ as.Date(close_date)),
+                open_month = lubridate::floor_date(date_open, 'month'),
+                close_month = lubridate::floor_date(date_close, 'month'),
+                status = factor(ifelse(is.na(date_close), "Unresolved", "Resolved"), levels = c("Unresolved", "Resolved")),
+                date_required_completion = dplyr::case_when(is.na(required_completion_date) ~ as.Date(date_open + lubridate::days(30)),
+                                                            TRUE ~ as.Date(required_completion_date)),
+                bizdays_toclose = ifelse(is.na(date_close), NA, round(as.numeric(bizdays::bizdays(date_open, date_close, cal = business_calendar)), digits = 1)),
+                late = ifelse(date_close > date_required_completion, 1, 0),
+                bizdays_late = ifelse(late == 1, round(as.numeric(bizdays::bizdays(date_required_completion, date_close, cal = business_calendar)), digits = 1), 0),
+                bizdays_response = round(as.numeric(bizdays::bizdays(date_open, first_response_date, cal = business_calendar)), digits = 1),
+                response_late = ifelse(bizdays_response > 5, 1, 0),
+                response_bizdayslate = ifelse(bizdays_response > 5, bizdays_response-5, 0),
+                no_response = ifelse(is.na(first_response_date), 1, 0)) %>%
+  dplyr::filter(open_month <= start_last_month) %>%
+  dplyr::select(reference_no, date_open, open_month, date_close, close_month, department_requesting_information_from, status, request_status, source, information_type, date_required_completion, bizdays_toclose, late, bizdays_late, bizdays_response, response_late, response_bizdayslate, no_response)
