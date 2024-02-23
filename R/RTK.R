@@ -75,7 +75,7 @@ rtk_pull <- function(con, dept_list, col_list, mode = "single") {
 #' @return A list of data frames of aggregated RTK data for the department(s) selected
 #' @export
 #'
-#' @example
+#' @examples
 #' \dontrun{
 #' as_transform <- rtk_data(data_as, start_last_month, end_last_month)
 #' }
@@ -365,7 +365,7 @@ rtk_chart <- function(data, rpt_sdate, palette, type = "type", range = "month") 
 #' @return A named list of values of RTK KPIs
 #' @export
 #'
-#' @example
+#' @examples
 #' \dontrun{
 #' as_summary <- rtk_data(data_as, start_last_month, end_last_month)
 #' }
