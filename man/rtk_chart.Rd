@@ -13,7 +13,7 @@ rtk_chart(data, rpt_sdate, palette, type = "type", range = "month")
 
 \item{palette}{Color palette for time series}
 
-\item{type}{Type of kable or gglot object returned. Must be 'type', 'close', 'late', 'table', 'status', or 'received'. 'Status' and 'received' types facet by department if more than one is present in data. Data format must match type selected.}
+\item{type}{Type of kable or gglot object returned. Must be 'type', 'source', 'close', 'late', 'table', 'status', or 'received'. 'Status' and 'received' types facet by department if more than one is present in data. Data format must match type selected.}
 
 \item{range}{Date range displayed in plot or table. Must be 'month', '12months', 'timeseries', or 'ytd'.}
 }
