@@ -14,4 +14,9 @@ Depends:
   stringr,
   lubridate,
   ggplot2,
-  scales
+  scales,
+  DBI, 
+  bizdays,
+  tidyr,
+  treemapify,
+  kableExtra
