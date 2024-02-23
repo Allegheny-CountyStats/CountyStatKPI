@@ -404,7 +404,7 @@ rtk_summary <- function(data, rpt_sdate, rpt_edate) {
                                                               TRUE~ required_completion_date),
                   bizdays_toclose = ifelse(is.na(date_close), NA, round(as.numeric(bizdays::bizdays(date_open, date_close, cal = business_calendar)), digits = 1)),
                   late = ifelse(date_close > date_required_completion, 1, 0),
-                  bizdays_late = ifelse(late == 1, round(as.numeric(bizdays::bizdays(date_required_completion, date_close, cal = business_calendar, origin = "1970-01-01")), digits = 1), 0),
+                  bizdays_late = ifelse(late == 1, round(as.numeric(bizdays::bizdays(date_required_completion, date_close, cal = business_calendar)), digits = 1), 0),
                   bizdays_response = round(as.numeric(bizdays::bizdays(date_open, first_response_date, cal = business_calendar)), digits = 1),
                   response_late = ifelse(bizdays_response > 5, 1, 0),
                   response_bizdayslate = ifelse(bizdays_response > 5, bizdays_response-5, 0),
@@ -490,7 +490,7 @@ rtk_text <- function(data, rpt_sdate, rpt_edate, dept_text) {
   received_abs_chg <- dplyr::case_when(received_inc_dec == "" ~ "Equal to",
                                   TRUE ~ paste0(abs(received_pct_chg), "%"))
 
-  received_header <- stringr::str_c("## ", my, ": ", summary$month_received, " RTK requests received\n", "** ", received_up_down, received_abs_chg, " ", received_inc_dec, " the all-time monthly average **")
+  received_header <- stringr::str_c("## ", my, ": ", summary$month_received, " RTK requests received\n", "**", received_up_down, received_abs_chg, " ", received_inc_dec, " the all-time monthly average**")
 
   received_text <- stringr::str_c(dept_text, " received ", summary$month_received, " right-to-know requests in ", my, ". This compares to an all-time monthly average of ", summary$alltime_monavg_received, " and a year-to-date monthly average of ", summary$ytd_monavg_received, " requests received. Of the RTK requests submitted this month, ", summary$month_resolved, " have since been resolved.")
 
@@ -510,7 +510,7 @@ rtk_text <- function(data, rpt_sdate, rpt_edate, dept_text) {
   close_day <- dplyr::case_when(summary$month_mindaystoclose < 1 ~ "less than a day.",
                                 TRUE ~ paste(summary$month_mindaystoclose, "days."))
 
-  close_header <- stringr::str_c("## ", my, ": ", summary$month_avgdaystoclose, " business days to close\n", "** ", close_up_down, close_abs_chg, " ", close_inc_dec, " the business days to close all-time average **")
+  close_header <- stringr::str_c("## ", my, ": ", summary$month_avgdaystoclose, " business days to close\n", "**", close_up_down, close_abs_chg, " ", close_inc_dec, " the business days to close all-time average**")
 
   close_text <- stringr::str_c("The ", summary$month_closed, " requests closed in ", my, " by ", dept_text, " were closed in ", summary$month_avgdaystoclose, " days on average. This compares to an all-time average of ", summary$alltime_avgdaystoclose, " business days to close and a year-to-date average of ", summary$ytd_avgdaystoclose, " business days to close. The requests closed in ", my, " were resolved in a maximum of ", summary$month_maxdaystoclose, " days and a minimum of ", close_day)
 
