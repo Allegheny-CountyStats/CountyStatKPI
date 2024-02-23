@@ -33,12 +33,12 @@ rtk_pull <- function(con, dept_list, col_list, mode = "single") {
       first_response_date
       FROM Master.AS_OpenRecords_GovQA_OpenRecordsActivities"))
 
-    rtkdata <- rtkdata %>%
+    rtkjoin <- rtkdata %>%
       dplyr::left_join(duedates, by = "reference_no") %>%
       dplyr::mutate(required_completion_date = as.Date(lubridate::parse_date_time(required_completion_date, "%m-%d-%Y %I:%M:%S %p"), format = "%Y-%m-%d"),
                     first_response_date = as.Date(lubridate::parse_date_time(first_response_date, "%m-%d-%Y %I:%M:%S %p"), format = "%Y-%m-%d"))
 
-    return(data.frame(rtkdata))
+    return(data.frame(rtkjoin))
   } else if (mode == "multi") {
     rtkdata <- DBI::dbGetQuery(con, SQL(paste0("SELECT close_date,
       create_date,
@@ -55,12 +55,12 @@ rtk_pull <- function(con, dept_list, col_list, mode = "single") {
       first_response_date
       FROM Master.AS_OpenRecords_GovQA_OpenRecordsActivities"))
 
-    rtkdata <- rtkdata %>%
+    rtkjoin<- rtkdata %>%
       dplyr::left_join(duedates, by = "reference_no") %>%
       dplyr::mutate(required_completion_date = as.Date(lubridate::parse_date_time(required_completion_date, "%m-%d-%Y %I:%M:%S %p"), format = "%Y-%m-%d"),
                     first_response_date = as.Date(lubridate::parse_date_time(first_response_date, "%m-%d-%Y %I:%M:%S %p"), format = "%Y-%m-%d"))
 
-    return(data.frame(rtkdata))
+    return(data.frame(rtkjoin))
   } else {
     return("Mode must be either 'single' or 'multi'.")
   }
@@ -108,6 +108,11 @@ rtk_data <- function(data, rpt_sdate, rpt_edate) {
     dplyr::summarise(count = n_distinct(reference_no, na.rm = TRUE)) %>%
     dplyr::rename("month" = "open_month")
 
+  source <- clean_data %>%
+    dplyr::group_by(open_month, source) %>%
+    dplyr::summarise(count = n_distinct(reference_no, na.rm = TRUE)) %>%
+    dplyr::rename("month" = "open_month")
+
   close <- clean_data %>%
     dplyr::filter(!is.na(date_close)) %>%
     dplyr::group_by(close_month) %>%
@@ -139,6 +144,7 @@ rtk_data <- function(data, rpt_sdate, rpt_edate) {
                   month_abb = factor(month.abb[lubridate::month(open_month)], levels = month.abb),
                   thisyear = ifelse(lubridate::year(open_month) == lubridate::year(rpt_sdate), TRUE, FALSE)) %>%
     dplyr::rename("month" = "open_month")
+
 
   if (length(unique(clean_data$department_requesting_information_from)) == 1) {
 
@@ -177,7 +183,7 @@ rtk_data <- function(data, rpt_sdate, rpt_edate) {
     }  else {
       return("Must supply data frame, report start date, and report end date. Check dataframe for NA values.")
     }
-  return(list(clean = clean_data, table = table, type = type, close = close, late = late, response = response, status = status, received = received))
+  return(list(clean = clean_data, table = table, type = type, source = source, close = close, late = late, response = response, status = status, received = received))
 }
 
 #' Function that filters RTK data, cleaned and formatted by rtk_data function, down to a specified date range, then creates the selected kable or ggplot object.
@@ -185,7 +191,7 @@ rtk_data <- function(data, rpt_sdate, rpt_edate) {
 #' @param data Data frame of clean and formatted RTK data
 #' @param rpt_sdate A date value that represents the first day of the reporting month
 #' @param palette Color palette for time series
-#' @param type Type of kable or gglot object returned. Must be 'type', 'close', 'late', 'table', 'status', or 'received'. 'Status' and 'received' types facet by department if more than one is present in data. Data format must match type selected.
+#' @param type Type of kable or gglot object returned. Must be 'type', 'source', 'close', 'late', 'table', 'status', or 'received'. 'Status' and 'received' types facet by department if more than one is present in data. Data format must match type selected.
 #' @param range Date range displayed in plot or table. Must be 'month', '12months', 'timeseries', or 'ytd'.
 #'
 #' @return A kable or ggplot object
@@ -231,6 +237,20 @@ rtk_chart <- function(data, rpt_sdate, palette, type = "type", range = "month") 
       ggplot2::theme(legend.position = "none") +
       ggplot2::scale_fill_brewer(palette = "Dark2") +
       ggplot2::labs(title = "RTK Requests by Information Type Requested",
+                    subtitle = subtitle)
+    return(plot)
+  } else if (type == "source") {
+    plot <- range_data %>%
+      dplyr::group_by(source) %>%
+      dplyr::summarise(count = sum(count, na.rm = TRUE)) %>%
+      ggplot2::ggplot(aes(area = count, fill = source, label = paste0(stringr::str_wrap(source, 10), "\n", count))) +
+      treemapify::geom_treemap() +
+      treemapify::geom_treemap_text(color = "white",
+                                    place = "center",
+                                    size = 10) +
+      ggplot2::theme(legend.position = "none") +
+      ggplot2::scale_fill_brewer(palette = "Dark2") +
+      ggplot2::labs(title = "RTK Requests by Source",
                     subtitle = subtitle)
     return(plot)
   } else if (type == "close") {
@@ -286,7 +306,7 @@ rtk_chart <- function(data, rpt_sdate, palette, type = "type", range = "month") 
       plot <- range_data %>%
         ggplot2::ggplot(aes(x = month, y = count, fill = factor(status), group = factor(status))) +
         ggplot2::geom_bar(stat = "identity", position = ggplot2::position_stack()) +
-        ggplot2::geom_label(aes(x= month, y= count, label = count), size = 3, position = ggplot2::position_stack(vjust=0), color = "black", fill=alpha(c("white"), 0.3), label.size= 0) +
+        ggplot2::geom_label(aes(x= month, y= count, label = count), size = 3, position = ggplot2::position_stack(vjust=0.5), color = "black", fill=alpha(c("white"), 0.3), label.size= 0) +
         ggplot2::scale_fill_manual(values = c("#D95F02", "#1B9E77")) +
         ggplot2::labs(title = "RTK Requests by Month",
                       subtitle = subtitle,
@@ -352,7 +372,7 @@ rtk_chart <- function(data, rpt_sdate, palette, type = "type", range = "month") 
       return(plot)
     }
   } else {
-    return("Type must be 'type', 'close', 'late', 'status', 'received', or 'table'. Type must be compatible with data format.")
+    return("Type must be 'type', 'source', 'close', 'late', 'status', 'received', or 'table'. Type must be compatible with data format.")
   }
 }
 
