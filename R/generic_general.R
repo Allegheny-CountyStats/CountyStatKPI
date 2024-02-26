@@ -352,18 +352,31 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt, 
 #'
 #' @param kpi_cmp A kpi_compare object.
 #' @param rpt_date The first day of the reporting month.
+#' @param mode Can be either "my" to compare to the same month in the previous year or "ytd" to compare to the same period in the previous year.
 #'
 #' @return A string with R markdown formatting.
 #' @export
 #' @examples
 #' metric_yoy_text <- kpi_yoy_text(metric_cmp, rpt_date)
-kpi_yoy_text <- function(kpi_cmp, rpt_date) {
-  month <- month(rpt_date, label = TRUE, abbr = FALSE)
-  if (kpi_cmp$yoy_inc_dec == "no change") {
-    yoy_text <- str_c("There has been **no change compared to last ", month, "**")
+kpi_yoy_text <- function(kpi_cmp, rpt_date, mode = "my") {
+  if (mode == "my") {
+    month <- month(rpt_date, label = TRUE, abbr = FALSE)
+    if (kpi_cmp$yoy_inc_dec == "no change") {
+      yoy_text <- str_c("There has been **no change compared to last ", month, "**")
+    } else {
+      yoy_text <- str_c("This month represents **a ", kpi_cmp$yoy_abs_chg, "% ",
+                        kpi_cmp$yoy_inc_dec, " compared to last ", month, "**")
+    }
+  } else if (mode == "ytd") {
+    month <- month(rpt_date, label = TRUE, abbr = FALSE)
+    if (kpi_cmp$ytd_inc_dec == "no change") {
+      yoy_text <- str_c("There has been **no change compared to the same period in ", year(rpt_date) - 1, "**")
+    } else {
+      yoy_text <- str_c("This month represents **a ", kpi_cmp$ytd_abs_chg, "% ",
+                        kpi_cmp$ytd_inc_dec, " compared to the same period in ", year(rpt_date), "**")
+    }
   } else {
-    yoy_text <- str_c("This month represents **a ", kpi_cmp$yoy_abs_chg, "% ",
-                      kpi_cmp$yoy_inc_dec, " compared to last ", month, "**")
+    return("mode must be either 'my' or 'ytd'.")
   }
   return(yoy_text)
 }
