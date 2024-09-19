@@ -373,7 +373,7 @@ kpi_yoy_text <- function(kpi_cmp, rpt_date, mode = "my") {
       yoy_text <- str_c("There has been **no change compared to the same period in ", year(rpt_date) - 1, "**")
     } else {
       yoy_text <- str_c("This month represents **a ", kpi_cmp$ytd_abs_chg, "% ",
-                        kpi_cmp$ytd_inc_dec, " compared to the same period in ", year(rpt_date), "**")
+                        kpi_cmp$ytd_inc_dec, " compared to the same period in ", year(rpt_date) - 1, "**")
     }
   } else {
     return("mode must be either 'my' or 'ytd'.")
