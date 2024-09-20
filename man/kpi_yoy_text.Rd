@@ -4,12 +4,14 @@
 \alias{kpi_yoy_text}
 \title{A function creating text for year-over-year change.}
 \usage{
-kpi_yoy_text(kpi_cmp, rpt_date)
+kpi_yoy_text(kpi_cmp, rpt_date, mode = "my")
 }
 \arguments{
 \item{kpi_cmp}{A kpi_compare object.}
 
 \item{rpt_date}{The first day of the reporting month.}
+
+\item{mode}{Can be either "my" to compare to the same month in the previous year or "ytd" to compare to the same period in the previous year.}
 }
 \value{
 A string with R markdown formatting.

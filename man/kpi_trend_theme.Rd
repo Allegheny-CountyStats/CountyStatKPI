@@ -5,7 +5,7 @@
 \alias{kpi_trend_theme}
 \title{A theme for KPI trend plots}
 \format{
-An object of class \code{theme} (inherits from \code{gg}) of length 94.
+An object of class \code{theme} (inherits from \code{gg}) of length 97.
 }
 \usage{
 kpi_trend_theme
