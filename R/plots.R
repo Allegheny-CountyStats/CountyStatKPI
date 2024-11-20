@@ -40,6 +40,7 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
 #' plot + labs(title = "Plot title", y = "Count") + kpi_trend_theme())
 kpi_trend_theme <- ggplot2::theme_minimal() +
   ggplot2::theme(legend.position = "bottom",
+                 legend.title = element_blank(),
                  axis.title.x = ggplot2::element_blank())
 
 #' A function that creates a uniform color scheme for KPI reports.
