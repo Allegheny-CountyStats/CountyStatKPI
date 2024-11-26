@@ -108,7 +108,7 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
 #' plotly_theme(census_plot)
 
 plotly_theme <- function(plot) {
-  ggplotly(kpi_plotly, tooltip = c("text")) %>%
+  ggplotly(plot, tooltip = c("text")) %>%
     layout(legend = list(title = list(text = ""),
                          orientation = "h",
                          x = 0.5,
