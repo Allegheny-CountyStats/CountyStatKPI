@@ -59,3 +59,59 @@ kpiPal <- function(end_date) {
   color_pal %>% deframe()
 }
 
+#' A function that creates a trend plot (ggplot), showing monthly data for the current year and four previous years, with the current year highlighted. It must be followed with labs and theme arguments. This function additionally includes a text argument, which will create the tooltip in ggplotly.
+#'
+#' @param data A data frame.
+#' @param cnt_col The column with the counts or values you want to plot.
+#' @param month_lag How many months you want it to lag from the report date (default 0).
+#' @param rpt_month The first date of the month of the KPI report (default rpt_date).
+#' @param date_col The date column in the data frame (default rpting_date).
+#' @param palette The palette you want it to use (default pal).
+#' @param metric_text The descriptive text for the cnt_col that will appear in the tooltip
+#'
+#' @return A ggplot object.
+#' @export
+#'
+#'@examples
+#' census_plot <- kpi_trend_plotly(monthly_avg_census, avg_census, rpt_month = reporting_mo, date_col = census_month, palette = pal, metric_text = "average daily residents") + labs(title = "Monthly Average Daily Census", y = "Residents") + kpi_trend_theme
+
+kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, date_col = rpting_date, palette = pal, metric_text) {
+  plot <- data %>%
+    filter(year({{date_col}}) >= year(rpt_month - months(month_lag)) - 4,
+           {{date_col}} <= rpt_month - months(month_lag)) %>%
+    mutate(month_abb = month({{date_col}}, label = TRUE),
+           year_fct = factor(year({{date_col}})),
+           this_year = ifelse(year({{date_col}}) == year(rpt_month - months(month_lag)), TRUE, FALSE)) %>%
+    ggplot(aes(month_abb,
+               {{cnt_col}},
+               group = year_fct,
+               color = year_fct,
+               alpha = this_year,
+               text = paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", {{cnt_col}}, metric_text))) +
+    geom_line(linewidth = 1) +
+    geom_point() +
+    scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    scale_color_manual(values = palette) +
+    scale_alpha_discrete(range = c(0.3, 1)) +
+    guides(alpha = FALSE)
+  return(plot)
+}
+
+#' A function to turn a kpi_trend_plotly object into a ggplotly object. Note: You cannot have subtitles in ggplotly.
+#'
+#' @param plot A ggplot object, likely created using kpi_trend_plotly
+#'
+#' @return A ggplotly object
+#' @export
+#'
+#' @examples
+#' plotly_theme(census_plot)
+
+plotly_theme <- function(plot) {
+  ggplotly(kpi_plotly, tooltip = c("text")) %>%
+    layout(legend = list(title = list(text = ""),
+                         orientation = "h",
+                         x = 0.5,
+                         xanchor = "center")) %>%
+    config(displayModeBar = FALSE)
+}
