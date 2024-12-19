@@ -130,6 +130,9 @@ HR_pulldata <- function(wh_con, jde_dept = "All", onbase_dept = "All", novatime_
   # By default, most reports will not include seasonals, with a few exceptions
   if (include_seasonals == FALSE) {
     # Applications do not include seasonal positions
+    seasonal_emps <- current_employees %>%
+      dplyr::filter(union_name %like% "%Temporary/Seasonal%",
+                    Job_Title %like any% c("%SEASONAL%", "%TEMP%"))
     current_employees <- current_employees %>%
       dplyr::filter(!union_name %like% "%Temporary/Seasonal%",
                     !Job_Title %like any% c("%SEASONAL%", "%TEMP%"))
@@ -153,6 +156,7 @@ HR_pulldata <- function(wh_con, jde_dept = "All", onbase_dept = "All", novatime_
                 payperiods = payperiods,
                 positionvacancies = positionvacancies,
                 vacancyhistory = vacancyhistory,
+                seasonal_emps = seasonal_emps,
                 nonexec_depts = nonexec_depts))
   } else {
     # If seasons are included, pull table of seasonal rehires
@@ -175,19 +179,19 @@ HR_pulldata <- function(wh_con, jde_dept = "All", onbase_dept = "All", novatime_
 
 #' Function to pull categorize employees by status
 #'
-#' @param data The current_employees data frame from the HR_pulldata() function
+#' @param data The data frames resulting from the HR_pulldata() function
 #' @param include_seasonals TRUE or FALSE binary to include seasonal and temporary employees. Defaults to FALSE.
 #'
 #' @return A dataframe with employee counts by category that can be used in the current_employees_text() and current_employees_table() functions
 #' @export
 #'
 #' @examples
-#' dept_employees_cat <- current_employees(dept_HRdata$current_employees, include_seasonals = FALSE)
+#' dept_employees_cat <- current_employees(dept_HRdata, include_seasonals = FALSE)
 
 current_employees <- function(data, include_seasonals = FALSE) {
   if (include_seasonals == FALSE) {
     # Categorize employees by pt/ft and union/non-union
-    employee_categories <- data %>%
+    employee_categories <- data$current_employees %>%
       dplyr::mutate(pt_ft = dplyr::case_when(Benefit_Group %like% '%PT%' ~ 'Part-Time',
                                              TRUE ~ 'Full-Time')) %>%
       dplyr::group_by(pt_ft) %>%
@@ -195,9 +199,10 @@ current_employees <- function(data, include_seasonals = FALSE) {
                        `Non-Union` = n_distinct(JDE_ID[union_status == "Non-Union" & !union_name %like% "%Temporary/Seasonal%"])) %>%
       dplyr::ungroup() %>%
       janitor::adorn_totals(c("col", "row"))
+    seasonal_count <- nrow(data$seasonal_emps)
   } else {
     # Categorize employees by pt/ft and union/non-union/seasonal
-    employee_categories <- data %>%
+    employee_categories <- data$current_employees %>%
       dplyr::mutate(pt_ft = dplyr::case_when(Benefit_Group %like% '%PT%' ~ 'Part-Time',
                                              TRUE ~ 'Full-Time')) %>%
       dplyr::group_by(pt_ft) %>%
@@ -206,20 +211,23 @@ current_employees <- function(data, include_seasonals = FALSE) {
                        Seasonal = n_distinct(JDE_ID[union_name %like% "%Temporary/Seasonal%" | Job_Title %like any% c("%SEASONAL%", "%TEMP%")])) %>%
       dplyr::ungroup() %>%
       janitor::adorn_totals(c("col", "row"))
+    seasonal_count <- ifelse(is_empty(employee_categories$Seasonal[employee_categories$pt_ft == "Total"]),
+                             0, employee_categories$Seasonal[employee_categories$pt_ft == "Total"])
   }
-  return(employee_categories)
+  return(list(employee_categories = employee_categories,
+         seasonal_count = seasonal_count))
 }
 
 #' Function to make table of current employee categories
 #'
-#' @param data The data frame resulting from current_employees() function
+#' @param data The employee_categories data frame resulting from current_employees() function
 #' @param include_seasonals TRUE or FALSE binary to include seasonal and temporary employees. Defaults to FALSE.
 #'
 #' @return A kable table with employee counts by category
 #' @export
 #'
 #' @examples
-#' print(current_employees_table(dept_employees_cat, include_seasonals = FALSE))
+#' print(current_employees_table(dept_employees_cat$employee_categories, include_seasonals = FALSE))
 
 current_employees_table <- function(data, include_seasonals = FALSE) {
   if (include_seasonals == FALSE) {
@@ -241,7 +249,7 @@ current_employees_table <- function(data, include_seasonals = FALSE) {
 
 #' Function to create header and explanatory text for current employees section of HR report
 #'
-#' @param data The data frame resulting from current_employees() function
+#' @param data The data frames resulting from current_employees() function
 #' @param dept_name Name of department(s) as it should appear in text
 #' @param rpt_enddate Last day in reporting month (produced by HR_dates() function)
 #' @param include_seasonals TRUE or FALSE binary to include seasonal and temporary employees. Defaults to FALSE.
@@ -253,16 +261,16 @@ current_employees_table <- function(data, include_seasonals = FALSE) {
 #' dept_employees_txt <- current_employees_text(dept_employees_cat, "Health Department", dates$reporting_emonth, include_seasonals = FALSE)
 
 current_employees_text <- function(data, dept_name, rpt_enddate, include_seasonals = FALSE) {
-  pct_ft <- round(ifelse(is_empty(data$Total[data$pt_ft == "Full-Time"]),
-                         0, data$Total[data$pt_ft == "Full-Time"])/data$Total[data$pt_ft == "Total"]*100, 1)
-  pct_union <- round(ifelse(is_empty(data$Union[data$pt_ft == "Total"]),
-                            0, data$Union[data$pt_ft == "Total"])/data$Total[data$pt_ft == "Total"]*100, 1)
-  seasonal_count <- ifelse(is_empty(data$Seasonal[data$pt_ft == "Total"]), 0, data$Seasonal[data$pt_ft == "Total"])
+  pct_ft <- round(ifelse(is_empty(data$employee_categories$Total[data$employee_categories$pt_ft == "Full-Time"]),
+                         0, data$employee_categories$Total[data$employee_categories$pt_ft == "Full-Time"])/data$employee_categories$Total[data$employee_categories$pt_ft == "Total"]*100, 1)
+  pct_union <- round(ifelse(is_empty(data$employee_categories$Union[data$employee_categories$pt_ft == "Total"]),
+                            0, data$employee_categories$Union[data$employee_categories$pt_ft == "Total"])/data$employee_categories$Total[data$employee_categories$pt_ft == "Total"]*100, 1)
+  seasonal_count <- data$seasonal_count
 
   if (include_seasonals == FALSE) {
-    current_employees_text <- paste0("## ", format(data$Total[data$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", data$Total[data$pt_ft == "Total"], " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report excludes seasonal and temporary employees, for which there are currently ", seasonal_count, " employed by the ", dept_name, ".")
+    current_employees_text <- paste0("## ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report excludes seasonal and temporary employees, for which there are currently ", seasonal_count, " employed by the ", dept_name, ".")
   } else {
-    current_employees_text <- paste0("## ", format(data$Total[data$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", data$Total[data$pt_ft == "Total"], " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report *includes* seasonal and temporary employees (except where noted) because of their major contribution to ", dept_name, " operations.")
+    current_employees_text <- paste0("## ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report *includes* seasonal and temporary employees (except where noted) because of their major contribution to ", dept_name, " operations.")
   }
 }
 
