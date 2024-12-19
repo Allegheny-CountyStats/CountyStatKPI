@@ -334,7 +334,7 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt, 
     } else {
 
       header_text <- stringr::str_c("## YTD: ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
-                                    "**", kpi_cmp$ytd_up_down, " ", kpi_cmp$ytd_abs_chg, "% ", kpi_cmp$ytd_inc_dec, " compared the same period in the previous year**")
+                                    "**", kpi_cmp$ytd_up_down, " ", kpi_cmp$ytd_abs_chg, "% ", kpi_cmp$ytd_inc_dec, " compared to the same period in the previous year**")
 
     }
 
