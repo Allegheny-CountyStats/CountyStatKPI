@@ -634,9 +634,10 @@ terminations_table <- function(data, rpt_date) {
 #' dept_transfers <- transfers(dept_HRdata, jde_dept, dates)
 
 transfers <- function(data, jde_dept, dates_obj){
-  # Find transfers into the department; where old department is null is a new hire, current department equals jde_dept, and current department doesn't equal old department (title change)
+  # Find transfers into the department; where old department is null is a new hire and where new employment is false is a rehire, current department equals jde_dept, and current department doesn't equal old department (title change)
   transfers_in <- data$employee_history %>%
     dplyr::filter(!is.na(Old_Department),
+                  New_Employment == 'False',
                   Department == jde_dept,
                   Department != Old_Department,
                   Position_Start_Date >= dates_obj$HRtimeseries_floordate,
@@ -648,9 +649,10 @@ transfers <- function(data, jde_dept, dates_obj){
     dplyr::group_by(start_month) %>%
     dplyr::summarise(In = n_distinct(id_start)) %>%
     tidyr::complete(start_month = seq.Date(dates_obj$HRtimeseries_floordate, dates_obj$HRtimeseries_ceilingdate, by = "month"), fill = list(In = 0))
-  # Find transfers out of the department; old department equals jde_dept, and current department doesn't equal old department (title change)
+  # Find transfers out of the department; where new employment is false is a rehire, old department equals jde_dept, and current department doesn't equal old department (title change)
   transfers_out <- data$employee_history %>%
     dplyr::filter(Old_Department == jde_dept,
+                  New_Employment == 'False',
                   Department != Old_Department,
                   Position_Start_Date >= dates_obj$HRtimeseries_floordate,
                   Position_Start_Date <= dates_obj$HRtimeseries_ceilingdate)
@@ -754,7 +756,7 @@ title_changes <- function(data, jde_dept, dates_obj){
     title_changes <- data$employee_history %>%
       dplyr::filter(Department == jde_dept)
   }
-  # Find title changes; where current department is the same as old department but job titles are different; calculate time in previous position
+  # Find title changes; where current department is the same as old department but job titles are different and is not new employment; calculate time in previous position
   title_changes <- data$employee_history %>%
     dplyr::group_by(JDE_ID) %>%
     dplyr::mutate(old_start = dplyr::lag(Position_Start_Date, n=1, order_by = Position_Start_Date),
@@ -762,6 +764,7 @@ title_changes <- function(data, jde_dept, dates_obj){
                   time_in_previous = round(as.numeric(difftime(old_end, old_start, units = "days"))/365.25, 1)) %>%
     dplyr::filter(Department == Old_Department,
                   Job_Title != Old_Job_Title,
+                  New_Employment == 'False',
                   Position_Start_Date >= dates_obj$HRtimeseries_floordate,
                   Position_Start_Date <= dates_obj$HRtimeseries_ceilingdate)
   # Title change time series

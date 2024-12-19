@@ -26,7 +26,7 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_color_manual(values = palette) +
     scale_alpha_discrete(range = c(0.3, 1)) +
-    guides(alpha = FALSE)
+    guides(alpha = 'none')
 
   return(plot)
 }
@@ -93,7 +93,7 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
     scale_color_manual(values = palette) +
     scale_alpha_discrete(range = c(0.3, 1)) +
-    guides(alpha = FALSE)
+    guides(alpha = 'none')
   return(plot)
 }
 
