@@ -19,4 +19,6 @@ Depends:
   bizdays,
   tidyr,
   treemapify,
-  kableExtra
+  kableExtra,
+  janitor,
+  ggrepel
