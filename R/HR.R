@@ -1156,13 +1156,16 @@ time_off <- function(data, dates_obj){
                   Date_Worked <= dates_obj$reporting_emonth) %>%
     dplyr::distinct(JDE_ID) %>%
     nrow()
+  #Dates for time series
+  timesheet_min <- lubridate::floor_date(min(data$timesheet$Date_Worked), unit = "month")
+  timesheet_max <- lubridate::floor_date(max(data$timesheet$Date_Worked), unit = "month")
   # Sick time series
   sick_time <- data$timesheet %>%
     dplyr::filter(Pay_Subcategory == 'Sick') %>%
     dplyr::mutate(sick_month = lubridate::floor_date(Date_Worked, unit = "month")) %>%
     dplyr::group_by(sick_month) %>%
     dplyr::summarise(days = round(sum(Hrs_Worked)/8, 0)) %>%
-    tidyr::complete(sick_month = seq.Date(min(data$timesheet$Date_Worked), max(data$timesheet$Date_Worked), by = "month"), fill = list(days = 0)) %>%
+    tidyr::complete(sick_month = seq.Date(timesheet_min, timesheet_max, by = "month"), fill = list(days = 0)) %>%
     dplyr::mutate(sick_year = lubridate::year(sick_month),
                   sick_monthname = factor(month.abb[month(sick_month)], levels = month.abb),
                   sick_monthnum = lubridate::month(sick_month))
@@ -1187,7 +1190,7 @@ time_off <- function(data, dates_obj){
     dplyr::mutate(vac_month = lubridate::floor_date(Date_Worked, unit = "month")) %>%
     dplyr::group_by(vac_month) %>%
     dplyr::summarise(days = round(sum(Hrs_Worked)/8, 0)) %>%
-    tidyr::complete(vac_month = seq.Date(min(data$timesheet$Date_Worked), max(data$timesheet$Date_Worked), by = "month"), fill = list(days = 0)) %>%
+    tidyr::complete(vac_month = seq.Date(timesheet_min, timesheet_max, by = "month"), fill = list(days = 0)) %>%
     dplyr::mutate(vac_year = lubridate::year(vac_month),
                   vac_monthname = factor(month.abb[month(vac_month)], levels = month.abb),
                   vac_monthnum = lubridate::month(vac_month))
