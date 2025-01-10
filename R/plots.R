@@ -41,7 +41,8 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
 kpi_trend_theme <- ggplot2::theme_minimal() +
   ggplot2::theme(legend.position = "bottom",
                  legend.title = element_blank(),
-                 axis.title.x = ggplot2::element_blank())
+                 axis.title.x = ggplot2::element_blank(),
+                 panel.grid.major.x = element_blank())
 
 #' A function that creates a uniform color scheme for KPI reports.
 #'
@@ -87,7 +88,7 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
                group = year_fct,
                color = year_fct,
                alpha = this_year,
-               text = paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", {{cnt_col}}, metric_text))) +
+               text = paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", format({{cnt_col}}, big.mark = ","), metric_text))) +
     geom_line(linewidth = 1) +
     geom_point() +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
