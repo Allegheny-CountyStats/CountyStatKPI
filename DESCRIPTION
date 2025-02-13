@@ -21,4 +21,5 @@ Depends:
   treemapify,
   kableExtra,
   janitor,
-  ggrepel
+  ggrepel,
+  plotly
