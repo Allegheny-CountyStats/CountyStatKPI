@@ -33,89 +33,157 @@ HR_dates <- function(){
 #' all_HRdata <- HR_pulldata(wh_con, rpt_enddate = dates$reporting_emonth, include_seasonals = FALSE)
 
 HR_pulldata <- function(wh_con, jde_dept = "All", onbase_dept = "All", novatime_dept = "All", rpt_enddate, include_seasonals = FALSE) {
-  # Pull applications with an entry date  less than the reporting end date
-  applications <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT DISTINCT
-    AppID,
-    IsPaper,
-    EntryDate,
-    [Position],
-    Dept,
-    Div,
-    ScreenDate,
-    CurrentEligStatus,
-    COVID,
-    Residency,
-    [Source],
-    SourceOther,
-    HireStatus
-  FROM Reporting.HumanResources_Job_Applications_V
-  WHERE EntryDate <= '", rpt_enddate, "'")))
+# If function designates a department, filter to department, otherwise keep all executive departments (be sure to trim white space as precaution)
+  # Pull applications with an entry date less than the reporting end date
+  if (onbase_dept == "All") {
+    applications <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT DISTINCT
+      AppID,
+      IsPaper,
+      EntryDate,
+      [Position],
+      Dept,
+      Div,
+      ScreenDate,
+      CurrentEligStatus,
+      COVID,
+      Residency,
+      [Source],
+      SourceOther,
+      HireStatus
+    FROM Reporting.HumanResources_Job_Applications_V
+    WHERE EntryDate <= '", rpt_enddate, "'")))
+  } else {
+    applications <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT DISTINCT
+      AppID,
+      IsPaper,
+      EntryDate,
+      [Position],
+      Dept,
+      Div,
+      ScreenDate,
+      CurrentEligStatus,
+      COVID,
+      Residency,
+      [Source],
+      SourceOther,
+      HireStatus
+    FROM Reporting.HumanResources_Job_Applications_V
+    WHERE EntryDate <= '", rpt_enddate, "'
+    AND TRIM(Dept) LIKE '%", onbase_dept, "%'")))
+  }
   # Pull current employees (who meet data requirements) who have a null termination dates or who terminated after the report end date and who started prior to the report end date
-  current_employees <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT DISTINCT *
-                                    FROM Reporting.HumanResources_JDE_CurrentEmployeeDetails_C
-                                    WHERE (Date_Terminated IS NULL OR Date_Terminated > '", rpt_enddate, "')
-                                    AND union_name IS NOT NULL
-                                    AND Job_Title <> 'One Time Only'
-                                    AND TRIM(Benefit_Group) <> ''
-                                    AND Date_Started <= '", rpt_enddate, "'")))
+  if (jde_dept == "All") {
+    current_employees <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT DISTINCT *
+                                      FROM Reporting.HumanResources_JDE_CurrentEmployeeDetails_C
+                                      WHERE (Date_Terminated IS NULL OR Date_Terminated > '", rpt_enddate, "')
+                                      AND union_name IS NOT NULL
+                                      AND Job_Title <> 'One Time Only'
+                                      AND TRIM(Benefit_Group) <> ''
+                                      AND Date_Started <= '", rpt_enddate, "'")))
+  } else {
+    current_employees <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT DISTINCT *
+                                      FROM Reporting.HumanResources_JDE_CurrentEmployeeDetails_C
+                                      WHERE (Date_Terminated IS NULL OR Date_Terminated > '", rpt_enddate, "')
+                                      AND union_name IS NOT NULL
+                                      AND Job_Title <> 'One Time Only'
+                                      AND TRIM(Benefit_Group) <> ''
+                                      AND Date_Started <= '", rpt_enddate, "'
+                                      AND TRIM(Department) = '", jde_dept, "'")))
+  }
   # Pull employee history where position start date is prior to the report end date
-  employee_history <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
-                                    FROM Reporting.HumanResources_JDE_EmployeePositionHistoryShort_V
-                                    WHERE Position_Start_Date <= '", rpt_enddate, "'
-                                    AND Employee_Status != '6'
-                                    AND Job_Title NOT LIKE '%ONE TIME ONLY%'")))
+  if (jde_dept == "All") {
+    employee_history <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
+                                      FROM Reporting.HumanResources_JDE_EmployeePositionHistoryShort_V
+                                      WHERE Position_Start_Date <= '", rpt_enddate, "'
+                                      AND Employee_Status != '6'
+                                      AND Job_Title NOT LIKE '%ONE TIME ONLY%'")))
+  } else {
+    employee_history <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
+                                      FROM Reporting.HumanResources_JDE_EmployeePositionHistoryShort_V
+                                      WHERE Position_Start_Date <= '", rpt_enddate, "'
+                                      AND Employee_Status != '6'
+                                      AND Job_Title NOT LIKE '%ONE TIME ONLY%'
+                                      AND (TRIM(Department) = '", jde_dept, "'
+                                           OR TRIM(Old_Department) = '", jde_dept, "')")))
+  }
   # Pull time reported where date worked is prior to the report end date
-  timesheet <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
-                                    FROM Reporting.HumanResources_JDE_EmployeeWorkDays_V
-                                    WHERE Date_Worked <= '", rpt_enddate, "'")))
+  if (jde_dept == "All") {
+    timesheet <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
+                                      FROM Reporting.HumanResources_JDE_EmployeeWorkDays_V
+                                      WHERE Date_Worked <= '", rpt_enddate, "'")))
+  } else {
+    timesheet <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
+                                      FROM Reporting.HumanResources_JDE_EmployeeWorkDays_V
+                                      WHERE Date_Worked <= '", rpt_enddate, "'
+                                      AND TRIM(Department) = '", jde_dept, "'")))
+  }
   # Pull employee scheduled, approved vacation time
-  schedule <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT
-    EmployeeID,
-    Hours,
-    WorkDate,
-    PayPeriod,
-    RequestStatus,
-    EmployeeName,
-    Dept,
-    Title,
-    PayCodeTxt
-  FROM Reporting.HumanResources_Novatime_Schedule_V
-  WHERE RequestStatus = 'Approved' AND PayCodeTxt = 'VACA'")))
+  if (novatime_dept == "All") {
+    schedule <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT
+      EmployeeID,
+      Hours,
+      WorkDate,
+      PayPeriod,
+      RequestStatus,
+      EmployeeName,
+      Dept,
+      Title,
+      PayCodeTxt
+    FROM Reporting.HumanResources_Novatime_Schedule_V
+    WHERE RequestStatus = 'Approved' AND PayCodeTxt = 'VACA'")))
+  } else {
+    schedule <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT
+      EmployeeID,
+      Hours,
+      WorkDate,
+      PayPeriod,
+      RequestStatus,
+      EmployeeName,
+      Dept,
+      Title,
+      PayCodeTxt
+    FROM Reporting.HumanResources_Novatime_Schedule_V
+    WHERE RequestStatus = 'Approved' AND PayCodeTxt = 'VACA'
+    AND TRIM(Dept) = '", novatime_dept, "'")))
+  }
   # Pull pay periods
   payperiods <- DBI::dbGetQuery(wh_con, SQL("SELECT *
                                        FROM Master.HumanResources_Direct_CountyPayPeriods"))
   # Pull vacancies with job title
-  positionvacancies <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
-                                            FROM Reporting.Budget_PowerPlanJDE_EmployeesVacancies_V
-                                            WHERE Status = 'Vacant'
-                                            AND Job_Title IS NOT NULL")))
+  if (jde_dept == "All") {
+    positionvacancies <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
+                                              FROM Reporting.Budget_PowerPlanJDE_EmployeesVacancies_V
+                                              WHERE Status = 'Vacant'
+                                              AND Job_Title IS NOT NULL")))
+  } else {
+    positionvacancies <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT *
+                                              FROM Reporting.Budget_PowerPlanJDE_EmployeesVacancies_V
+                                              WHERE Status = 'Vacant'
+                                              AND Job_Title IS NOT NULL
+                                              AND TRIM(Department) = '", jde_dept, "'")))
+  }
   # Pull vacancy history
-  vacancyhistory <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT Date_Stamp,
-    Department,
-    Status,
-    Positions
-      FROM Reporting.Budget_PowerPlanJDE_VacancyHistory_V
-      WHERE Status = 'Vacant'
-      AND Date_Stamp <= '", rpt_enddate, "'")))
-  # If function designates a department, filter to department, otherwise keep all executive departments (be sure to trim white space as precaution)
+  if (jde_dept == "All") {
+    vacancyhistory <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT Date_Stamp,
+      Department,
+      Status,
+      Positions
+        FROM Reporting.Budget_PowerPlanJDE_VacancyHistory_V
+        WHERE Status = 'Vacant'
+        AND Date_Stamp <= '", rpt_enddate, "'")))
+  } else {
+    vacancyhistory <- DBI::dbGetQuery(wh_con, SQL(paste0("SELECT Date_Stamp,
+      Department,
+      Status,
+      Positions
+        FROM Reporting.Budget_PowerPlanJDE_VacancyHistory_V
+        WHERE Status = 'Vacant'
+        AND Date_Stamp <= '", rpt_enddate, "'
+        AND TRIM(Department) = '", jde_dept, "'")))
+  }
   #Create list of all iterations of department names
   nonexec_depts <- c('ALL COUNTY DEPARTMENTS', 'CONTROLLERS OFFICE', 'Controller', 'COUNTY CONCIL', 'County Council', 'Miscellaneous Agencies', 'Court of Common Pleas', 'DCS Test - Department', 'DISTRICT ATTORNEYS OFFICE', 'District Attorney', 'Juvenile Court Placement', 'LAW', 'M/W/DBE', 'No Department', 'Non-Dept Expenditures', 'PENN STATE COOPERATIVE EXTENSION', 'RETIREMENT', 'Retirement System', "SHERIFF'S OFFICE", 'SHERIFFS OFFICE', 'Sheriff', 'SHUMAN', 'Shuman Center', 'TRAINING - Department', 'TREASURERS OFFICE', 'Treasurer')
-  if (jde_dept != "All" & onbase_dept != "All" & novatime_dept != "All") {
-    applications <- applications %>%
-      dplyr::filter(trimws(Dept) %like% onbase_dept)
-    current_employees <- current_employees %>%
-      dplyr::filter(trimws(Department) == jde_dept)
-    employee_history <- employee_history %>%
-      dplyr::filter(trimws(Department) == jde_dept | trimws(Old_Department) == jde_dept)
-    timesheet <- timesheet %>%
-      dplyr::filter(trimws(Department) == jde_dept)
-    schedule <- schedule %>%
-      dplyr::filter(trimws(Dept) == novatime_dept)
-    positionvacancies <- positionvacancies %>%
-      dplyr::filter(trimws(Department) %like% jde_dept)
-    vacancyhistory <- vacancyhistory %>%
-      dplyr::filter(trimws(Department) %like% jde_dept)
-  } else {
+  if (jde_dept == "All" & onbase_dept == "All" & novatime_dept == "All") {
     applications <- applications %>%
       dplyr::filter(!trimws(Dept) %in% nonexec_depts)
     current_employees <- current_employees %>%
@@ -268,7 +336,7 @@ current_employees_text <- function(data, dept_name, rpt_enddate, include_seasona
   seasonal_count <- data$seasonal_count
 
   if (include_seasonals == FALSE) {
-    current_employees_text <- paste0("## ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report excludes seasonal and temporary employees, for which there are currently ", seasonal_count, " employed by the ", dept_name, ".")
+    current_employees_text <- paste0("## ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report excludes seasonal and temporary employees, for which there are currently ", seasonal_count, " employed by the ", dept_name, ".")
   } else {
     current_employees_text <- paste0("## ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " current employees\nAs of ", format(rpt_enddate, "%B %d, %Y"), ", ", format(data$employee_categories$Total[data$employee_categories$pt_ft == "Total"], big.mark = ','), " people work for Allegheny County's ", dept_name, ", ", pct_ft, "% of which are full-time employees and ", pct_union, "% of which are union employees. This report *includes* seasonal and temporary employees (except where noted) because of their major contribution to ", dept_name, " operations.")
   }
@@ -949,8 +1017,8 @@ vacancies_plot <- function(data) {
     ggplot2::ggplot(aes(x = Date_Stamp, y = Positions)) +
     ggplot2::geom_line(size = 1) +
     ggplot2::geom_point(size = 3) +
-    ggrepel::geom_label_repel(data = slice_head(subset(vacancy_history,  Positions == max(Positions))), aes(x = Date_Stamp, y = Positions, label = paste0("High: ", format(Date_Stamp, "%b %Y"), "\n", Positions, " vacancies")), nudge_y = nudge, size = 3, color = "#D73027") +
-    ggrepel::geom_label_repel(data = slice_head(subset(vacancy_history, Positions == min(Positions))), aes(x = Date_Stamp, y = Positions, label = paste0("Low: ", format(Date_Stamp, "%b %Y"), "\n", Positions, " vacancies")), nudge_y = nudge, size = 3, color = "#5AAE61") +
+    ggrepel::geom_label_repel(data = slice_head(subset(vacancy_history,  Positions == max(Positions))), aes(x = Date_Stamp, y = Positions, label = paste0("High: ", format(Date_Stamp, "%b %Y"), "\n", format(Positions, big.mark = ','), " vacancies")), nudge_y = nudge, size = 3, color = "#D73027") +
+    ggrepel::geom_label_repel(data = slice_head(subset(vacancy_history, Positions == min(Positions))), aes(x = Date_Stamp, y = Positions, label = paste0("Low: ", format(Date_Stamp, "%b %Y"), "\n", format(Positions, big.mark = ','), " vacancies")), nudge_y = nudge, size = 3, color = "#5AAE61") +
     ggplot2::labs(title = "Historical Vacancies",
                   y = "Vacancies",
                   caption = "Historical data collection began in May 2024. Data is typically cached every two weeks.") +
@@ -980,7 +1048,7 @@ vacancies_text <- function(data, rpt_enddate, dept_name){
     dplyr::arrange(jobs)
   openpositions <- sum(vacancies$positions, na.rm = TRUE)
   openjobs <- sum(vacancies$jobs, na.rm = TRUE)
-  text <- paste0("## Open Positions: ", openpositions, " budgeted, vacant positions(s)\nAs of ", format(rpt_enddate, "%B %d, %Y"), " there are ", openpositions, " open position(s) that fall under ", openjobs, " unique job title(s) in the ", dept_name, ". This number does not necessarily reflect the number of posted positions that applicants can currently apply to.")
+  text <- paste0("## Open Positions: ", format(openpositions, big.mark = ','), " budgeted, vacant positions(s)\nAs of ", format(rpt_enddate, "%B %d, %Y"), " there are ", format(openpositions, big.mark = ','), " open position(s) that fall under ", openjobs, " unique job title(s) in the ", dept_name, ". This number does not necessarily reflect the number of posted positions that applicants can currently apply to.")
 }
 
 #' Function to create data frames for applications received. Supports 'All' departments.
@@ -1061,7 +1129,7 @@ applications_text <- function(data, rpt_date, seasonal = FALSE) {
   pct_testing_year <- round(sum(data$applications_time$testing[data$applications_time$submit_year == year(rpt_date)])/data$applications_year$rytd_cnt*100, 1)
   avg_monthly_apps <- round(mean(data$applications_time$apps[data$applications_time$submit_year == year(rpt_date)], na.rm = TRUE), 0)
   applications_year_header <- CountyStatKPI::kpi_header_text(data$applications_year, rpt_date, prior_val = "ytd", metric_txt = "application(s) recevied")
-  applications_year_text <- paste0("On average, the department received ", avg_monthly_apps, " applications each month this year. Of the applications recevied so far in ", format(rpt_date, "%Y"), ", ", pct_eligible_year, "% have been deemed eligible or moved to the interview queue, and an additional ", pct_testing_year, "% are eligible for or awaiting testing.")
+  applications_year_text <- paste0("On average, the department received ", format(avg_monthly_apps, big.mark = ','), " applications each month this year. Of the applications recevied so far in ", format(rpt_date, "%Y"), ", ", pct_eligible_year, "% have been deemed eligible or moved to the interview queue, and an additional ", pct_testing_year, "% are eligible for or awaiting testing.")
   return(list(applications_month_header = applications_month_header,
               applications_month_text = applications_month_text,
               applications_year_header = applications_year_header,
@@ -1259,10 +1327,10 @@ time_off_text <- function(data, rpt_date){
                       paste0("No change compared to ", format(rpt_date, "%B"), " average"),
                       paste0(data$time_info$vaccmp_updown, " ", data$time_info$vaccmp_abspct, "% ", data$time_info$vaccmp_incdec, " ", format(rpt_date, "%B"), " average"))
   intro_text <- paste0("Monthly values for sick and vacation time represent totals through the last approved pay period ending on ", format(data$time_info$max_payperiod, "%B %d, %Y"), ". Averages are based on data from ", lubridate::year(rpt_date)-3, " onward.")
-  sick_header <- paste0("## Sick Time in ", format(rpt_date, "%B %Y"), ": ", data$time_info$sick_days, " day(s)\n **", sick_change, "**")
-  sick_text <- paste0("Employees used a total of ", data$time_info$sick_days, " sick day(s) in the reporting month, while the average for that month is ", data$time_info$avg_sick, " days. Each employee used an average of ", data$time_info$sick_peremp, " sick day(s) this month.")
+  sick_header <- paste0("## Sick Time in ", format(rpt_date, "%B %Y"), ": ", format(data$time_info$sick_days, big.mark = ','), " day(s)\n **", sick_change, "**")
+  sick_text <- paste0("Employees used a total of ", format(data$time_info$sick_days, big.mark = ','), " sick day(s) in the reporting month, while the average for that month is ", format(data$time_info$avg_sick, big.mark = ','), " days. Each employee used an average of ", data$time_info$sick_peremp, " sick day(s) this month.")
   vac_header <- paste0("## Vacation Time in ", format(rpt_date, "%B %Y"), ": ", data$time_info$vac_days, " day(s)\n **", vac_change, "**")
-  vac_text <- paste0("Employees used a total of ", data$time_info$vac_days, " vacation day(s) in the reporting month, while the average for that month is ", data$time_info$avg_vac, " days. Each employee used an average of ", data$time_info$vac_peremp, " vacation day(s) this month.")
+  vac_text <- paste0("Employees used a total of ", format(data$time_info$vac_days, big.mark = ','), " vacation day(s) in the reporting month, while the average for that month is ", format(data$time_info$avg_vac, big.mark = ','), " days. Each employee used an average of ", data$time_info$vac_peremp, " vacation day(s) this month.")
   return(list(intro_text = intro_text,
               sick_header = sick_header,
               sick_text = sick_text,
@@ -1311,3 +1379,4 @@ time_off_plots <- function(data, pal){
   return(list(sick_plot = sick_plot,
               vac_plot = vac_plot))
 }
+
