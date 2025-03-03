@@ -1,7 +1,7 @@
 Package: CountyStatKPI
 Type: Package
 Title: Functions for CountyStat KPI reports
-Version: 1.0.5
+Version: 1.0.6
 Author: CountyStat
 Maintainer: CountyStat <CountyStat@alleghenycounty.us>
 Description: A suite of functions that help produce the KPI Site and COB reports for CountyStat.
