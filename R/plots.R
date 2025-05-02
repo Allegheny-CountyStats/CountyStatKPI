@@ -68,7 +68,8 @@ kpiPal <- function(end_date) {
 #' @param rpt_month The first date of the month of the KPI report (default rpt_date).
 #' @param date_col The date column in the data frame (default rpting_date).
 #' @param palette The palette you want it to use (default pal).
-#' @param metric_text The descriptive text for the cnt_col that will appear in the tooltip
+#' @param text_custom A true/false binary for showing the standard metric text (default) or creating a custom tooltop
+#' @param metric_text The descriptive text for the cnt_col or custom paste function (depending on text_custom) that will appear in the tooltip
 #'
 #' @return A ggplot object.
 #' @export
@@ -76,7 +77,7 @@ kpiPal <- function(end_date) {
 #'@examples
 #' census_plot <- kpi_trend_plotly(monthly_avg_census, avg_census, rpt_month = reporting_mo, date_col = census_month, palette = pal, metric_text = "average daily residents") + labs(title = "Monthly Average Daily Census", y = "Residents") + kpi_trend_theme
 
-kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, date_col = rpting_date, palette = pal, metric_text) {
+kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, date_col = rpting_date, palette = pal, text_custom = FALSE, metric_text) {
   plot <- data %>%
     filter(year({{date_col}}) >= year(rpt_month - months(month_lag)) - 4,
            {{date_col}} <= rpt_month - months(month_lag)) %>%
@@ -88,7 +89,7 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
                group = year_fct,
                color = year_fct,
                alpha = this_year,
-               text = paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", format({{cnt_col}}, big.mark = ","), metric_text))) +
+               text = ifelse(text_custom == FALSE, paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", format({{cnt_col}}, big.mark = ","), metric_text), metric_text))) +
     geom_line(linewidth = 1) +
     geom_point() +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
