@@ -68,8 +68,8 @@ kpiPal <- function(end_date) {
 #' @param rpt_month The first date of the month of the KPI report (default rpt_date).
 #' @param date_col The date column in the data frame (default rpting_date).
 #' @param palette The palette you want it to use (default pal).
-#' @param text_custom A true/false binary for showing the standard metric text (default) or creating a custom tooltop
-#' @param metric_text The descriptive text for the cnt_col or custom paste function (depending on text_custom) that will appear in the tooltip
+#' @param text_custom A true/false binary for showing the standard metric text (default) or creating a custom tooltip
+#' @param metric_text The descriptive text for the cnt_col or custom paste function (depending on text_custom) wrapped in expr() that will appear in the tooltip
 #'
 #' @return A ggplot object.
 #' @export
@@ -83,13 +83,15 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
            {{date_col}} <= rpt_month - months(month_lag)) %>%
     mutate(month_abb = month({{date_col}}, label = TRUE),
            year_fct = factor(year({{date_col}})),
-           this_year = ifelse(year({{date_col}}) == year(rpt_month - months(month_lag)), TRUE, FALSE)) %>%
+           this_year = ifelse(year({{date_col}}) == year(rpt_month - months(month_lag)), TRUE, FALSE),
+           custom_text_col = case_when(text_custom == FALSE ~ paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", format({{cnt_col}}, big.mark = ","), metric_text),
+                                       TRUE ~ eval(metric_text))) %>%
     ggplot(aes(month_abb,
                {{cnt_col}},
                group = year_fct,
                color = year_fct,
                alpha = this_year,
-               text = ifelse(text_custom == FALSE, paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", format({{cnt_col}}, big.mark = ","), metric_text), metric_text))) +
+               text = custom_text_col)) +
     geom_line(linewidth = 1) +
     geom_point() +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
