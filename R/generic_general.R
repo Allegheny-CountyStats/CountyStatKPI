@@ -297,12 +297,12 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt, 
 
     if (kpi_cmp$mom_inc_dec == "no change") {
 
-      header_text <- stringr::str_c("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+      header_text <- paste0("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
                                     "**", kpi_cmp$mom_up_down, " No change compared to ", pmy, "**")
 
     } else {
 
-      header_text <- stringr::str_c("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+      header_text <- paste0("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
                                     "**", kpi_cmp$mom_up_down, " ", kpi_cmp$mom_abs_chg, "% ", kpi_cmp$mom_inc_dec, " compared to ", pmy, "**")
 
     }
@@ -314,12 +314,12 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt, 
 
     if (kpi_cmp$yoy_inc_dec == "no change") {
 
-      header_text <- stringr::str_c("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+      header_text <- paste0("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
                                     "**", kpi_cmp$yoy_up_down, " No change compared to ", pmy, "**")
 
     } else {
 
-      header_text <- stringr::str_c("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
+      header_text <- paste0("## ", my, ": ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rm_cnt, big.mark = ','), " ", metric_txt, "\n",
                                     "**", kpi_cmp$yoy_up_down, " ", kpi_cmp$yoy_abs_chg, "% ", kpi_cmp$yoy_inc_dec, " compared to ", pmy, "**")
 
     }
@@ -328,12 +328,12 @@ kpi_header_text <- function(kpi_cmp, rpt_date, prior_val = "month", metric_txt, 
 
     if (kpi_cmp$ytd_inc_dec == "no change") {
 
-      header_text <- stringr::str_c("## YTD: ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
+      header_text <- paste0("## YTD: ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
                                     "**", kpi_cmp$ytd_up_down, " ",  "No change compared to the same period in the previous year**")
 
     } else {
 
-      header_text <- stringr::str_c("## YTD: ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
+      header_text <- paste0("## YTD: ", ifelse(is.na(prefix), "", prefix), prettyNum(kpi_cmp$rytd_cnt, big.mark = ','), " ", metric_txt, "\n",
                                     "**", kpi_cmp$ytd_up_down, " ", kpi_cmp$ytd_abs_chg, "% ", kpi_cmp$ytd_inc_dec, " compared to the same period in the previous year**")
 
     }
@@ -362,17 +362,17 @@ kpi_yoy_text <- function(kpi_cmp, rpt_date, mode = "my") {
   if (mode == "my") {
     month <- month(rpt_date, label = TRUE, abbr = FALSE)
     if (kpi_cmp$yoy_inc_dec == "no change") {
-      yoy_text <- str_c("There has been **no change compared to last ", month, "**")
+      yoy_text <- paste0("There has been **no change compared to last ", month, "**")
     } else {
-      yoy_text <- str_c("This month represents **a ", kpi_cmp$yoy_abs_chg, "% ",
+      yoy_text <- paste0("This month represents **a ", kpi_cmp$yoy_abs_chg, "% ",
                         kpi_cmp$yoy_inc_dec, " compared to last ", month, "**")
     }
   } else if (mode == "ytd") {
     month <- month(rpt_date, label = TRUE, abbr = FALSE)
     if (kpi_cmp$ytd_inc_dec == "no change") {
-      yoy_text <- str_c("There has been **no change compared to the same period in ", year(rpt_date) - 1, "**")
+      yoy_text <- paste0("There has been **no change compared to the same period in ", year(rpt_date) - 1, "**")
     } else {
-      yoy_text <- str_c("This represents **a ", kpi_cmp$ytd_abs_chg, "% ",
+      yoy_text <- paste0("This represents **a ", kpi_cmp$ytd_abs_chg, "% ",
                         kpi_cmp$ytd_inc_dec, " compared to the same period in ", year(rpt_date) - 1, "**")
     }
   } else {
