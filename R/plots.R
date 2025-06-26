@@ -53,7 +53,7 @@ kpi_trend_theme <- ggplot2::theme_minimal() +
 #' palette = kpiPal(rpt_date)
 kpiPal <- function(end_date) {
   this_year <- as.numeric(format(end_date, "%Y"))
-  pal_cols <- c('#1b9e77', '#d95f02', '#e6ab02', '#66a61e', '#7570b3', '#e7298a')
+  pal_cols <- c('#1b9e77', '#d95f02', '#7570b3', '#66a61e', '#e6ab02', '#e7298a')
   years <- 2017:this_year
   color_pal <- data.frame(years)
   color_pal$colors <- rep_len(pal_cols, length.out=length(years))
