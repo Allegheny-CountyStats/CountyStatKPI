@@ -269,7 +269,7 @@ rtk_chart <- function(data, rpt_sdate, palette, type = "type", range = "month") 
                           color = "#D95F02") +
       ggplot2::geom_label(aes(x = x_year_lab, y=32.5, label = "Target: 30 days"),
                           color = "white", fill= "#D95F02", alpha = 0.1, label.size = NA) +
-      ggplot2::ylim(0, max(range_data$avg_daystoclose)+10) +
+      ggplot2::ylim(0, max(max(range_data$avg_daystoclose)+10, 35)) +
       ggplot2::theme_minimal() +
       ggplot2::theme(axis.title.x = element_blank(),
                      axis.title.y = element_blank())
