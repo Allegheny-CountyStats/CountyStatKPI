@@ -19,7 +19,7 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
            {{date_col}} <= rpt_month - months(month_lag)) %>%
     mutate(month_abb = month({{date_col}}, label = TRUE),
            year_fct = factor(year({{date_col}})),
-           this_year = ifelse(year({{date_col}}) == year(rpt_month - months(month_lag)), TRUE, FALSE)) %>%
+           this_year = ifelse(year({{date_col}}) == year(max({{date_col}})), TRUE, FALSE)) %>%
     ggplot(aes(month_abb, {{cnt_col}}, group = year_fct, color = year_fct, alpha = this_year)) +
     geom_line(linewidth = 1) +
     geom_point() +
@@ -83,7 +83,7 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
            {{date_col}} <= rpt_month - months(month_lag)) %>%
     mutate(month_abb = month({{date_col}}, label = TRUE),
            year_fct = factor(year({{date_col}})),
-           this_year = ifelse(year({{date_col}}) == year(rpt_month - months(month_lag)), TRUE, FALSE),
+           this_year = ifelse(year({{date_col}}) == year(max({{date_col}})), TRUE, FALSE),
            custom_text_col = case_when(text_custom == FALSE ~ paste("<B>", format({{date_col}}, "%B"), year_fct, "</B>\n", format({{cnt_col}}, big.mark = ","), metric_text),
                                        TRUE ~ eval(metric_text))) %>%
     ggplot(aes(month_abb,
