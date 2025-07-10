@@ -28,9 +28,9 @@ kpi_trend_plotly(
 
 \item{palette}{The palette you want it to use (default pal).}
 
-\item{text_custom}{A true/false binary for showing the standard metric text (default) or creating a custom tooltop}
+\item{text_custom}{A true/false binary for showing the standard metric text (default) or creating a custom tooltip}
 
-\item{metric_text}{The descriptive text for the cnt_col or custom paste function (depending on text_custom) that will appear in the tooltip}
+\item{metric_text}{The descriptive text for the cnt_col or custom paste function (depending on text_custom) wrapped in expr() that will appear in the tooltip}
 }
 \value{
 A ggplot object.
