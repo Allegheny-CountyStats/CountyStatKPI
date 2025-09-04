@@ -119,3 +119,22 @@ plotly_theme <- function(plot) {
                          xanchor = "center")) %>%
     config(displayModeBar = FALSE)
 }
+
+#' A function to fix stacked bar charts so they reposition themselves when you deselect legend items.
+#'
+#' @param plot A ggplot object, likely created using kpi_trend_plotly
+#'
+#' @return A ggplotly object
+#' @export
+#'
+#' @examples
+#' plotly_stack_fix(census_plot)
+
+plotly_stack_fix <- function(plot) {
+  for (i in 1:length(plot$x$data)) {
+    plot$x$data[[i]]$base <- c()
+  }
+
+  return(plot)
+}
+
