@@ -14,6 +14,14 @@
 #' metric_data %>% kpi_trend_plot(totals) + labs(title = 'Plot title', ylab = 'Count'))
 #' metric_data %>% kpi_trend_plot(totals, month_lag = 3, date_col = date) + labs(title = 'Plot title', ylab = 'Count') + theme_minimal())
 kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, date_col = rpting_date, palette = pal) {
+
+  alph_test <- data %>%
+    mutate(year = year({{date_col}})) %>%
+    pull(year) %>%
+    n_distinct()
+
+  alph_scale <- if (alph_test == 1) c(1, 1) else c(.3, 1)
+
   plot <- data %>%
     filter(year({{date_col}}) >= year(rpt_month - months(month_lag)) - 4,
            {{date_col}} <= rpt_month - months(month_lag)) %>%
@@ -24,8 +32,8 @@ kpi_trend_plot <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, d
     geom_line(linewidth = 1) +
     geom_point() +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    scale_alpha_discrete(alph_scale) +
     scale_color_manual(values = palette) +
-    scale_alpha_discrete(range = c(0.3, 1)) +
     guides(alpha = 'none')
 
   return(plot)
@@ -78,6 +86,14 @@ kpiPal <- function(end_date) {
 #' census_plot <- kpi_trend_plotly(monthly_avg_census, avg_census, rpt_month = reporting_mo, date_col = census_month, palette = pal, metric_text = "average daily residents") + labs(title = "Monthly Average Daily Census", y = "Residents") + kpi_trend_theme
 
 kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date, date_col = rpting_date, palette = pal, text_custom = FALSE, metric_text) {
+
+  alph_test <- data %>%
+    mutate(year = year({{date_col}})) %>%
+    pull(year) %>%
+    n_distinct()
+
+  alph_scale <- if (alph_test == 1) c(1, 1) else c(.3, 1)
+
   plot <- data %>%
     filter(year({{date_col}}) >= year(rpt_month - months(month_lag)) - 4,
            {{date_col}} <= rpt_month - months(month_lag)) %>%
@@ -95,9 +111,10 @@ kpi_trend_plotly <- function(data, cnt_col, month_lag = 0, rpt_month = rpt_date,
     geom_line(linewidth = 1) +
     geom_point() +
     scale_y_continuous(limits = c(0, NA), labels = scales::comma) +
+    scale_alpha_discrete(range = alph_scale) +
     scale_color_manual(values = palette) +
-    scale_alpha_discrete(range = c(0.3, 1)) +
     guides(alpha = 'none')
+
   return(plot)
 }
 
